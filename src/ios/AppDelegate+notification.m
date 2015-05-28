@@ -98,6 +98,40 @@ static char launchNotificationKey;
     }
 }
 
+- (void)application:(UIApplication *) application handleActionWithIdentifier: (NSString *) identifier
+forRemoteNotification: (NSDictionary *) notification
+  completionHandler: (void (^)()) completionHandler {
+    
+    PushPlugin *pushHandler = [self getCommandInstance:@"PushPlugin"];
+    
+    NSMutableDictionary * userInfo = [notification mutableCopy];
+    [userInfo setValue:identifier forKey:@"actionSelected"];
+    pushHandler.notificationMessage = userInfo;
+    
+    [pushHandler performSelectorOnMainThread:@selector(notificationReceived) withObject:pushHandler waitUntilDone:NO];
+    
+    // Must be called when finished
+    completionHandler();
+}
+
+- (void)application:(UIApplication *) application handleActionWithIdentifier: (NSString *) identifier
+  forLocalNotification: (NSDictionary *) notification
+  completionHandler: (void (^)()) completionHandler {
+
+    PushPlugin *pushHandler = [self getCommandInstance:@"PushPlugin"];
+    
+    NSMutableDictionary * userInfo = [[notification valueForKey:@"userInfo"] mutableCopy];
+    [userInfo setValue:identifier forKey:@"actionSelected"];
+    pushHandler.notificationMessage = userInfo;
+    
+    [pushHandler performSelectorOnMainThread:@selector(notificationReceived) withObject:pushHandler waitUntilDone:NO];
+    
+    // Must be called when finished
+    completionHandler();
+}
+
+
+
 // The accessors use an Associative Reference since you can't define a iVar in a category
 // http://developer.apple.com/library/ios/#documentation/cocoa/conceptual/objectivec/Chapters/ocAssociativeReferences.html
 - (NSMutableArray *)launchNotification

@@ -33,7 +33,6 @@
     BOOL    isInline;
     NSString *notificationCallbackId;
     NSString *callback;
-    
     BOOL ready;
 }
 
@@ -45,6 +44,9 @@
 @property BOOL                          isInline;
 
 - (void)register:(CDVInvokedUrlCommand*)command;
+- (void)registerUserNotificationSettings:(CDVInvokedUrlCommand*)command;
+
+- (void)areNotificationsEnabled:(CDVInvokedUrlCommand*)command;
 
 - (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken;
 - (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error;

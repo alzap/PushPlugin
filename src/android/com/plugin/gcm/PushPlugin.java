@@ -23,6 +23,7 @@ public class PushPlugin extends CordovaPlugin {
 	public static final String TAG = "PushPlugin";
 
 	public static final String REGISTER = "register";
+	public static final String REGISTER_CATEGORIES = "registerUserNotificationSettings";
 	public static final String UNREGISTER = "unregister";
 	public static final String EXIT = "exit";
 
@@ -31,6 +32,7 @@ public class PushPlugin extends CordovaPlugin {
 	private static String gSenderID;
 	private static Bundle gCachedExtras = null;
     private static boolean gForeground = false;
+    public static JSONObject categories;
 
 	/**
 	 * Gets the application context from cordova's main activity.
@@ -78,13 +80,17 @@ public class PushPlugin extends CordovaPlugin {
 			}
 
 		} else if (UNREGISTER.equals(action)) {
-
 			GCMRegistrar.unregister(getApplicationContext());
 
 			Log.v(TAG, "UNREGISTER");
 			result = true;
 			callbackContext.success();
-		} else {
+		} else if(REGISTER_CATEGORIES.equals(action)) {
+            JSONObject fullSettings = data.optJSONObject(0);
+            this.categories = fullSettings.optJSONObject("categories");
+            
+            result = true;
+        } else {
 			result = false;
 			Log.e(TAG, "Invalid action : " + action);
 			callbackContext.error("Invalid action : " + action);
