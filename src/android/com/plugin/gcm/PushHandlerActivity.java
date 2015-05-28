@@ -27,6 +27,7 @@ public class PushHandlerActivity extends Activity
 		boolean isPushPluginActive = PushPlugin.isActive();
 		processPushBundle(isPushPluginActive);
 
+
 		finish();
 
 		if (!isPushPluginActive) {
@@ -38,7 +39,7 @@ public class PushHandlerActivity extends Activity
 	 * Takes the pushBundle extras from the intent, 
 	 * and sends it through to the PushPlugin for processing.
 	 */
-	private void processPushBundle(boolean isPushPluginActive)
+	public void processPushBundle(boolean isPushPluginActive)
 	{
 		Bundle extras = getIntent().getExtras();
 
@@ -48,7 +49,14 @@ public class PushHandlerActivity extends Activity
             originalExtras.putBoolean("foreground", false);
             originalExtras.putBoolean("coldstart", !isPushPluginActive);
 
+            String actionSelected = extras.getString(GCMIntentService.ACTION_KEY);
+            originalExtras.putString("actionSelected", actionSelected);
+
 			PushPlugin.sendExtras(originalExtras);
+
+            // cancel the notification when an action button is clicked
+            final NotificationManager notificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
+            notificationManager.cancel(GCMIntentService.getAppName(this), extras.getInt("notId"));
 		}
 	}
 

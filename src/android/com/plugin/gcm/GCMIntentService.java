@@ -2,6 +2,8 @@ package com.plugin.gcm;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.JSONArray;
+import java.util.Random;
 
 import android.annotation.SuppressLint;
 import android.app.Notification;
@@ -13,12 +15,14 @@ import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
+
 import com.google.android.gcm.GCMBaseIntentService;
 
 @SuppressLint("NewApi")
 public class GCMIntentService extends GCMBaseIntentService {
 
 	private static final String TAG = "GCMIntentService";
+    public static final String ACTION_KEY = "PUSH_NOTIFICATION_ACTION_IDENTIFIER";
 	
 	public GCMIntentService() {
 		super("GCMIntentService");
@@ -61,6 +65,8 @@ public class GCMIntentService extends GCMBaseIntentService {
 
 		// Extract the payload from the message
 		Bundle extras = intent.getExtras();
+        Log.v(TAG, "extras: " + extras.toString());
+
 		if (extras != null)
 		{
 			// if we are in the foreground, just surface the payload, else post it to the statusbar
@@ -97,7 +103,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 				defaults = Integer.parseInt(extras.getString("defaults"));
 			} catch (NumberFormatException e) {}
 		}
-		
+
 		NotificationCompat.Builder mBuilder =
 			new NotificationCompat.Builder(context)
 				.setDefaults(defaults)
@@ -131,11 +137,40 @@ public class GCMIntentService extends GCMBaseIntentService {
 		catch(Exception e) {
 			Log.e(TAG, "Number format exception - Error parsing Notification ID" + e.getMessage());
 		}
-		
+
+        String cat_id = extras.getString("categoryName");
+        if(cat_id != null) {
+          JSONObject category = PushPlugin.categories.optJSONObject(cat_id);
+          JSONArray actions   = category.optJSONArray("actions"); 
+          int requestCode;
+
+          // add each action
+          for(int i = 0; i < actions.length(); i++) {
+            JSONObject action = actions.optJSONObject(i);
+            requestCode = new Random().nextInt();
+
+            // set up correct receiver for foreground or background handler
+            //if(extras.getString("activationMode") == "background") {
+            // notificationIntent = new Intent(this, BackgroundNotificationReceiver.class);
+            //}
+            //else {
+              notificationIntent = new Intent(this, PushHandlerActivity.class);
+            //}
+            notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+            notificationIntent.putExtra("pushBundle", extras);
+            notificationIntent.putExtra("notId", notId);
+            notificationIntent.putExtra(ACTION_KEY, action.optString("identifier"));
+
+            contentIntent = PendingIntent.getBroadcast(this, requestCode, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+
+            mBuilder  = mBuilder.addAction(action.optInt("icon"), action.optString("title"), contentIntent);
+          }
+        }
+
 		mNotificationManager.notify((String) appName, notId, mBuilder.build());
 	}
 	
-	private static String getAppName(Context context)
+	public static String getAppName(Context context)
 	{
 		CharSequence appName = 
 				context
