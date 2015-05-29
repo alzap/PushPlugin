@@ -1,13 +1,14 @@
 package com.plugin.gcm;
 
-import android.content.BroadcastReceiver;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
-import android.app.NotificationManager;
 import android.os.Bundle;
+import android.util.Log;
 
-public class BackgroundNotificationReceiver extends BroadcastReceiver {
+import com.google.android.gms.gcm.GcmReceiver;
+
+public class BackgroundNotificationReceiver extends GcmReceiver {
 
   @Override
   public void onReceive(Context context, Intent intent) {

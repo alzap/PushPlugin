@@ -1,9 +1,10 @@
 package com.plugin.gcm;
 
+import java.util.Random;
+
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONArray;
-import java.util.Random;
 
 import android.annotation.SuppressLint;
 import android.app.Notification;
@@ -12,25 +13,23 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
-
-import com.google.android.gcm.GCMBaseIntentService;
+import com.google.android.gms.gcm.GcmListenerService;
 
 @SuppressLint("NewApi")
-public class GCMIntentService extends GCMBaseIntentService {
+public class GCMIntentService extends GcmListenerService {
 
 	private static final String TAG = "GCMIntentService";
     public static final String ACTION_KEY = "PUSH_NOTIFICATION_ACTION_IDENTIFIER";
 	
 	public GCMIntentService() {
-		super("GCMIntentService");
+		super();
 	}
 
 	@Override
-	public void onRegistered(Context context, String regId) {
-
+	public int onStartCommand(Intent intent, int i1, int i2) {
+		String regId = intent.getStringExtra("regId");
 		Log.v(TAG, "onRegistered: "+ regId);
 
 		JSONObject json;
@@ -54,17 +53,17 @@ public class GCMIntentService extends GCMBaseIntentService {
 		}
 	}
 
-	@Override
-	public void onUnregistered(Context context, String regId) {
-		Log.d(TAG, "onUnregistered - regId: " + regId);
-	}
+//	@Override
+//	public void onUnregistered(Context context, String regId) {
+//		Log.d(TAG, "onUnregistered - regId: " + regId);
+//	}
 
 	@Override
-	protected void onMessage(Context context, Intent intent) {
-		Log.d(TAG, "onMessage - context: " + context);
+	public void onMessageReceived(String from, Bundle extras) {
+
+		Log.d(TAG, "onMessage - context: " + this);
 
 		// Extract the payload from the message
-		Bundle extras = intent.getExtras();
         Log.v(TAG, "extras: " + extras.toString());
 
 		if (extras != null)
@@ -79,7 +78,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 
                 // Send a notification if there is a message
                 if (extras.getString("message") != null && extras.getString("message").length() != 0) {
-                    createNotification(context, extras);
+					createNotification(this, extras);
                 }
             }
         }
@@ -104,8 +103,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 			} catch (NumberFormatException e) {}
 		}
 
-		NotificationCompat.Builder mBuilder =
-			new NotificationCompat.Builder(context)
+		Notification.Builder mBuilder = new Notification.Builder(context)
 				.setDefaults(defaults)
 				.setSmallIcon(context.getApplicationInfo().icon)
 				.setWhen(System.currentTimeMillis())
@@ -180,9 +178,9 @@ public class GCMIntentService extends GCMBaseIntentService {
 		return (String)appName;
 	}
 	
-	@Override
-	public void onError(Context context, String errorId) {
-		Log.e(TAG, "onError - errorId: " + errorId);
-	}
+//	@Override
+//	public void onError(Context context, String errorId) {
+//		Log.e(TAG, "onError - errorId: " + errorId);
+//	}
 
 }

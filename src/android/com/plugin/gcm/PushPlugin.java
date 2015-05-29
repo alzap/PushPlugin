@@ -1,19 +1,17 @@
 package com.plugin.gcm;
 
-import android.app.NotificationManager;
-import android.content.Context;
-import android.os.Bundle;
-import android.util.Log;
-import com.google.android.gcm.GCMRegistrar;
-import org.apache.cordova.CallbackContext;
-import org.apache.cordova.CordovaInterface;
-import org.apache.cordova.CordovaPlugin;
-import org.apache.cordova.CordovaWebView;
+import java.util.Iterator;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.Iterator;
+import android.app.NotificationManager;
+import android.content.Context;
+import android.os.Bundle;
+import android.util.Log;
+
+import com.google.android.gms.gcm.GoogleCloudMessaging;
 
 /**
  * @author awysocki
@@ -64,7 +62,8 @@ public class PushPlugin extends CordovaPlugin {
 
 				Log.v(TAG, "execute: ECB=" + gECB + " senderID=" + gSenderID);
 
-				GCMRegistrar.register(getApplicationContext(), gSenderID);
+				GoogleCloudMessaging.getInstance(getApplicationContext()).register(gSenderID);
+				//InstanceID.getInstance(getApplicationContext()).getToken(gSenderID);
 				result = true;
 				callbackContext.success();
 			} catch (JSONException e) {
@@ -80,7 +79,15 @@ public class PushPlugin extends CordovaPlugin {
 			}
 
 		} else if (UNREGISTER.equals(action)) {
-			GCMRegistrar.unregister(getApplicationContext());
+			//TODO: We shouldn't do this
+			/*
+			 * This is a blocking call—you shouldn't call it from the UI thread.
+			 * You should rarely (if ever) need to call this method. Not only is it expensive in terms of resources,
+			 * but it invalidates all your registration IDs returned from register() or subscribe().
+			 * This should not be done unnecessarily. A better approach is to simply have your server stop sending messages.
+			 */
+			//InstanceID.getInstance(getApplicationContext()).deleteInstanceID();
+			GoogleCloudMessaging.getInstance(getApplicationContext()).unregister();
 
 			Log.v(TAG, "UNREGISTER");
 			result = true;
